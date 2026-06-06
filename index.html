@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUMIMOCHI // ALT ZONE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0b0b;
+            color: #ccc;
+            font-family: 'Courier New', 'Menlo', 'Consolas', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255,255,255,0.008) 2px,
+                    rgba(255,255,255,0.008) 4px
+                );
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ФОТО ПО КРАЯМ */
+        .corner-photo {
+            position: fixed;
+            z-index: 1;
+            pointer-events: auto;
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+        }
+
+        .corner-photo .frame {
+            position: relative;
+            padding: 7px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            clip-path: polygon(
+                2% 0%, 98% 1%, 100% 3%, 99% 97%, 97% 100%, 
+                1% 99%, 0% 97%, 1% 2%
+            );
+        }
+
+        .corner-photo img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(30%) contrast(1.1);
+            transition: all 0.35s ease;
+            clip-path: polygon(
+                3% 1%, 97% 2%, 99% 4%, 98% 96%, 96% 99%, 
+                2% 98%, 1% 96%, 2% 3%
+            );
+        }
+
+        .corner-photo:hover {
+            z-index: 100;
+            transform: scale(1.2) !important;
+        }
+
+        .corner-photo:hover .frame {
+            border-color: #ff4466;
+            box-shadow: 0 0 25px rgba(255,68,102,0.5);
+        }
+
+        .corner-photo:hover img {
+            filter: grayscale(0%) contrast(1.15) brightness(1.1);
+        }
+
+        /* 
+           
+        */
+        .photo-top-left {
+            top: 6%;
+            left: 8%;
+            width: 130px;
+            height: 130px;
+            transform: rotate(-4deg);
+        }
+
+        .photo-top-right {
+            top: 6%;
+            right: 8%;
+            width: 130px;
+            height: 130px;
+            transform: rotate(3deg);
+        }
+
+        .photo-bottom-left {
+            bottom: 6%;
+            left: 8%;
+            width: 130px;
+            height: 130px;
+            transform: rotate(3deg);
+        }
+
+        .photo-bottom-right {
+            bottom: 6%;
+            right: 8%;
+            width: 130px;
+            height: 130px;
+            transform: rotate(-4deg);
+        }
+
+        /* Подпись под фото */
+        .photo-caption {
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.55rem;
+            color: #555;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .corner-photo:hover .photo-caption {
+            opacity: 1;
+            color: #ff4466;
+        }
+
+        /*  ОСНОВНОЙ КОНТЕЙНЕР */
+        .container {
+            max-width: 520px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Заголовок */
+        .header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 400;
+            letter-spacing: 6px;
+            color: #f0f0f0;
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+        }
+
+        .tagline {
+            font-size: 0.8rem;
+            color: #666;
+            letter-spacing: 3px;
+            text-transform: lowercase;
+        }
+
+        .tagline s {
+            color: #444;
+        }
+
+        /* Послание */
+        .message-box {
+            margin-bottom: 2rem;
+            padding: 1rem 1.2rem;
+            border-left: 2px solid #ff4466;
+            background: rgba(255,68,102,0.03);
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: #aaa;
+            white-space: pre-line;
+        }
+
+        /* Мини-игра */
+        .game-section {
+            background: #121212;
+            border: 1px solid #2a2a2a;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .game-section::before {
+            content: "мини-игра: поймай минет";
+            position: absolute;
+            top: -0.7rem;
+            left: 1rem;
+            background: #0b0b0b;
+            padding: 0 0.5rem;
+            font-size: 0.6rem;
+            color: #555;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .score {
+            color: #ff4466;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .timer {
+            color: #888;
+        }
+
+        .start-btn {
+            background: transparent;
+            border: 1px solid #ff4466;
+            color: #ff4466;
+            padding: 6px 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+
+        .start-btn:hover {
+            background: #ff4466;
+            color: #000;
+        }
+
+        .start-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            background: #0a0a0a;
+            border: 1px dashed #222;
+            overflow: hidden;
+            cursor: crosshair;
+            user-select: none;
+        }
+
+        .food-item {
+            position: absolute;
+            font-size: 1.8rem;
+            cursor: pointer;
+            z-index: 10;
+            animation: fall linear forwards;
+            pointer-events: auto;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+
+        @keyframes fall {
+            from { top: -50px; }
+            to { top: 110%; }
+        }
+
+        .phrase-pop {
+            position: absolute;
+            font-size: 0.7rem;
+            color: #ff4466;
+            pointer-events: none;
+            z-index: 20;
+            animation: phraseUp 0.9s ease-out forwards;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+
+        @keyframes phraseUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-35px); }
+        }
+
+        .game-message {
+            text-align: center;
+            color: #ff4466;
+            font-size: 0.8rem;
+            min-height: 1.2rem;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        /* Крупные ссылки */
+        .links-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .big-link {
+            display: block;
+            text-align: center;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-family: inherit;
+            letter-spacing: 2px;
+            text-decoration: none;
+            text-transform: uppercase;
+            border: 1px solid #444;
+            color: #ccc;
+            background: rgba(255,255,255,0.02);
+            transition: all 0.25s;
+            position: relative;
+        }
+
+        .big-link:hover {
+            border-color: #ff4466;
+            color: #fff;
+            background: rgba(255,68,102,0.08);
+            transform: translateX(3px);
+        }
+
+        .big-link.twitch {
+            border-left: 3px solid #9146ff;
+        }
+        .big-link.twitch:hover {
+            border-left-color: #bf94ff;
+            border-color: #9146ff;
+        }
+
+        .big-link.boosti {
+            border-left: 3px solid #ff4466;
+            color: #ff4466;
+            font-weight: bold;
+        }
+        .big-link.boosti:hover {
+            background: rgba(255,68,102,0.12);
+            border-color: #ff4466;
+        }
+
+        .big-link.telegram {
+            border-left: 3px solid #2aabee;
+        }
+        .big-link.telegram:hover {
+            border-left-color: #5ec4f6;
+            border-color: #2aabee;
+        }
+
+        .big-link .link-emoji {
+            margin-right: 8px;
+        }
+
+        .big-link .link-hint {
+            display: block;
+            font-size: 0.55rem;
+            color: #666;
+            letter-spacing: 2px;
+            margin-top: 2px;
+            text-transform: lowercase;
+        }
+
+        .footer-note {
+            font-size: 0.65rem;
+            color: #333;
+            text-align: right;
+            letter-spacing: 3px;
+        }
+
+        /*  АДАПТИВ  */
+        @media (max-width: 640px) {
+            .corner-photo {
+                width: 80px !important;
+                height: 80px !important;
+            }
+            .photo-top-left {
+                top: 4%;
+                left: 3%;
+            }
+            .photo-top-right {
+                top: 4%;
+                right: 3%;
+            }
+            .photo-bottom-left {
+                bottom: 4%;
+                left: 3%;
+            }
+            .photo-bottom-right {
+                bottom: 4%;
+                right: 3%;
+            }
+            h1 {
+                font-size: 1.7rem;
+                letter-spacing: 3px;
+            }
+            .game-area {
+                height: 200px;
+            }
+            .big-link {
+                font-size: 0.8rem;
+                padding: 10px 14px;
+            }
+            .container {
+                padding: 0 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!ФОТО ПО КРАЯМ>
+    
+    <div class="corner-photo photo-top-left" title="Fumimochi">
+        <div class="frame">
+            <img src="https://avatars.mds.yandex.net/i?id=a5e58584b52a58bf2a98888e1f04ad8e_l-4571300-images-thumbs&n=13" alt="Fumimochi 1">
+        </div>
+        <div class="photo-caption">fumi</div>
+    </div>
+
+    <div class="corner-photo photo-top-right" title="Fumimochi">
+        <div class="frame">
+            <img src="https://avatars.mds.yandex.net/i?id=25ae4c2806a8331772f57d7bbc110e86_l-9998293-images-thumbs&n=13" alt="Fumimochi 2">
+        </div>
+        <div class="photo-caption">hot</div>
+    </div>
+
+    <div class="corner-photo photo-bottom-left" title="Fumimochi">
+        <div class="frame">
+            <img src="https://avatars.mds.yandex.net/i?id=e591161f0e04c8aa36deea2422310e7e_l-5650102-images-thumbs&n=13">
+        </div>
+        <div class="photo-caption">kiss</div>
+    </div>
+
+    <div class="corner-photo photo-bottom-right" title="Fumimochi">
+        <div class="frame">
+            <img src="https://avatars.mds.yandex.net/i?id=34b2601a8ad30e12cbce6e61fc7dd524_l-5497593-images-thumbs&n=13">
+        </div>
+        <div class="photo-caption">peach</div>
+    </div>
+
+    <!основа>
+    <div class="container">
+        <div class="header">
+            <h1>FUMIMOCHI</h1>
+            <div class="tagline">
+                <s>невинность</s> // секс // <s>стыд</s>
+            </div>
+        </div>
+
+        <div class="message-box">
+            Ты не просто стримерша.<br>
+            Ты — <strong>причина</strong>, по которой зрители забывают дышать.<br>
+            Оставайся грязной, громкой и неприлично горячей.
+        </div>
+
+        <div class="game-section">
+            <div class="game-stats">
+                <span>очки: <span class="score" id="scoreDisplay">0</span></span>
+                <span class="timer" id="timerDisplay">20s</span>
+                <button class="start-btn" id="startBtn">▶ начать</button>
+            </div>
+            <div class="game-area" id="gameArea"></div>
+            <div class="game-message" id="gameMessage">кликай по сочным хуякам, пока время не вышло</div>
+        </div>
+
+        <div class="links-section">
+            
+            <a href="https://www.twitch.tv/fumimochi" target="_blank" class="big-link twitch">
+                <span class="link-emoji">🎮</span> TWITCH
+                <span class="link-hint">отсос дурачье</span>
+            </a>
+            <a href="https://boosty.to/fumimochi" target="_blank" class="big-link boosti">
+                <span class="link-emoji">🔥</span> BOOSTY
+                <span class="link-hint">просто пяточки</span>
+            </a>
+            <a href="https://t.me/s/fumimochiq" target="_blank" class="big-link telegram">
+                <span class="link-emoji">📢</span> TELEGRAM
+                <span class="link-hint">анонсы и некий куколдинг</span>
+            </a>
+        </div>
+
+        <div class="footer-note">⛓️ fumi zone ⛓️</div>
+    </div>
+
+    <script>
+        //  ИГРА 
+        const gameArea = document.getElementById('gameArea');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const gameMessage = document.getElementById('gameMessage');
+        const startBtn = document.getElementById('startBtn');
+
+        let score = 0;
+        let timeLeft = 20;
+        let gameActive = false;
+        let gameInterval = null;
+        let spawnInterval = null;
+
+        const naughtyPhrases = [
+            "глубже!",
+            "ещё!",
+            "я уже мокрая...",
+            "не останавливайся!",
+            "ах...",
+            "прямо туда...",
+            "мой сладкий позор...",
+            "заполни меня!",
+            "хватит дразнить!",
+            "испачкай меня...",
+            "боже, да...",
+            "ты заставляешь меня течь...",
+            "*всхлип*",
+            "разбуди зверя...",
+            "пальчики оближешь...",
+            "грязные мысли...",
+            "я вся горю...",
+            "ещё чуть-чуть..."
+        ];
+
+        const foodItems = [
+            { emoji: '🍑', points: 3 },
+            { emoji: '🍒', points: 2 },
+            { emoji: '💦', points: 5 },
+            { emoji: '🌶️', points: 1 },
+            { emoji: '🍆', points: 4 },
+            { emoji: '🍌', points: 3 },
+            { emoji: '🔥', points: 2 },
+            { emoji: '👅', points: 6 }
+        ];
+
+        function spawnFood() {
+            if (!gameActive) return;
+
+            const food = foodItems[Math.floor(Math.random() * foodItems.length)];
+            const item = document.createElement('div');
+            item.className = 'food-item';
+            item.textContent = food.emoji;
+            item.dataset.points = food.points;
+
+            const areaWidth = gameArea.clientWidth;
+            const x = Math.random() * (areaWidth - 45);
+            item.style.left = x + 'px';
+            item.style.top = '-50px';
+
+            const duration = 1.8 + Math.random() * 2.8;
+            item.style.animationDuration = duration + 's';
+
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!gameActive) return;
+
+                score += food.points;
+                scoreDisplay.textContent = score;
+
+                const phrase = naughtyPhrases[Math.floor(Math.random() * naughtyPhrases.length)];
+                const pop = document.createElement('div');
+                pop.className = 'phrase-pop';
+                pop.textContent = phrase;
+                pop.style.left = x + 'px';
+                pop.style.top = (parseFloat(item.style.top) || 100) + 'px';
+                gameArea.appendChild(pop);
+                pop.addEventListener('animationend', () => pop.remove());
+
+                item.style.transform = 'scale(0.2) rotate(45deg)';
+                item.style.opacity = '0';
+                setTimeout(() => item.remove(), 150);
+            });
+
+            item.addEventListener('animationend', () => item.remove());
+            gameArea.appendChild(item);
+
+            setTimeout(() => {
+                if (item.parentNode) item.remove();
+            }, (duration + 0.5) * 1000);
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = 20;
+            gameActive = true;
+            scoreDisplay.textContent = '0';
+            timerDisplay.textContent = timeLeft + 's';
+            gameMessage.textContent = 'хватай всё, что падает!';
+            startBtn.disabled = true;
+
+            gameArea.querySelectorAll('.food-item, .phrase-pop').forEach(el => el.remove());
+
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = timeLeft + 's';
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+
+            spawnInterval = setInterval(spawnFood, 550);
+            setTimeout(spawnFood, 150);
+            setTimeout(spawnFood, 350);
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            clearInterval(spawnInterval);
+            startBtn.disabled = false;
+            timerDisplay.textContent = '0s';
+
+            if (score >= 60) {
+                gameMessage.textContent = `💦 ${score} очков! Ты заставил меня кончить...`;
+            } else if (score >= 35) {
+                gameMessage.textContent = `🔥 ${score} очков! Горячо, но можно ещё жарче!`;
+            } else if (score > 0) {
+                gameMessage.textContent = `😏 ${score} очков. Неплохо для начала...`;
+            } else {
+                gameMessage.textContent = 'совсем ничего? инцел.';
+            }
+
+            setTimeout(() => {
+                gameArea.querySelectorAll('.food-item').forEach(el => el.remove());
+            }, 500);
+        }
+
+        startBtn.addEventListener('click', startGame);
+    </script>
+</body>
+</html>
